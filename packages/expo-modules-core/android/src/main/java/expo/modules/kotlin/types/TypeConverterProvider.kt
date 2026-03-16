@@ -12,6 +12,7 @@ import expo.modules.kotlin.exception.MissingTypeConverter
 import expo.modules.kotlin.jni.CppType
 import expo.modules.kotlin.jni.ExpectedType
 import expo.modules.kotlin.jni.JavaScriptArrayBuffer
+import expo.modules.kotlin.jni.JSCallback
 import expo.modules.kotlin.jni.JavaScriptFunction
 import expo.modules.kotlin.jni.JavaScriptObject
 import expo.modules.kotlin.jni.JavaScriptValue
@@ -158,6 +159,10 @@ object TypeConverterProviderImpl : TypeConverterProvider {
 
     if (SharedObject::class.java.isAssignableFrom(jClass)) {
       return SharedObjectTypeConverter<SharedObject>(type)
+    }
+
+    if (JSCallback::class.java.isAssignableFrom(jClass)) {
+      return JSCallbackTypeConverter()
     }
 
     if (JavaScriptFunction::class.java.isAssignableFrom(jClass)) {
