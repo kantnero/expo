@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.platform.ComposeView
@@ -107,9 +108,11 @@ abstract class ExpoComposeView<T : ComposeProps>(
     recomposeScope = currentRecomposeScope
     for (index in 0..<this.size) {
       val child = getChildAt(index) as? ExpoComposeView<*> ?: continue
-      with(composableScope ?: ComposableScope()) {
-        with(child) {
-          Content()
+      key(System.identityHashCode(child)) {
+        with(composableScope ?: ComposableScope()) {
+          with(child) {
+            Content()
+          }
         }
       }
     }
@@ -123,9 +126,11 @@ abstract class ExpoComposeView<T : ComposeProps>(
       if (!filter(child)) {
         continue
       }
-      with(composableScope ?: ComposableScope()) {
-        with(child) {
-          Content()
+      key(System.identityHashCode(child)) {
+        with(composableScope ?: ComposableScope()) {
+          with(child) {
+            Content()
+          }
         }
       }
     }

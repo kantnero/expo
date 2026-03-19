@@ -82,7 +82,7 @@ class LazyColumnView(context: Context, appContext: AppContext) :
       val count = composableChildCount.intValue
       for (index in 0..<count) {
         val child = getChildAt(index) as? ExpoComposeView<*> ?: continue
-        item {
+        item(key = System.identityHashCode(child)) {
           with(this@Content) {
             with(child) {
               Content()
