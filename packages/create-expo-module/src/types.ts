@@ -1,8 +1,17 @@
 import type { PromptObject } from 'prompts';
 
-/**
- * Possible command options.
- */
+export const ALL_FEATURES = [
+  'Constant',
+  'Function',
+  'AsyncFunction',
+  'Event',
+  'View',
+  'ViewEvent',
+  'SharedObject',
+] as const;
+
+export type Feature = (typeof ALL_FEATURES)[number];
+
 export type CommandOptions = {
   target: string;
   source?: string;
@@ -10,7 +19,6 @@ export type CommandOptions = {
   withChangelog: boolean;
   example: boolean;
   local: boolean;
-  // Module configuration options (skip prompts when provided)
   name?: string;
   description?: string;
   package?: string;
@@ -19,11 +27,10 @@ export type CommandOptions = {
   authorUrl?: string;
   repo?: string;
   platform?: string[];
+  features?: string[];
+  fullExample?: boolean;
 };
 
-/**
- * Represents an object that is passed to `ejs` when rendering the template.
- */
 export type SubstitutionData = {
   project: {
     slug: string;
@@ -33,7 +40,9 @@ export type SubstitutionData = {
     package: string;
     moduleName: string;
     viewName: string;
+    sharedObjectName: string;
     platforms: string[];
+    features: string[];
   };
   author: string;
   license: string;
@@ -48,7 +57,9 @@ export type LocalSubstitutionData = {
     package: string;
     moduleName: string;
     viewName: string;
+    sharedObjectName: string;
     platforms: string[];
+    features: string[];
   };
   type: 'local';
 };
