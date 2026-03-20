@@ -281,5 +281,7 @@ class ComposeFunctionHolder<Props : ComposeProps>(
 }
 
 internal class MissingHostException(componentName: String) :
-  CodedException("A Jetpack Compose view \"$componentName\" must be rendered inside a <Host> component. " +
-    "Wrap your component with `<Host>` from '@expo/ui/jetpack-compose'.")
+  CodedException(
+    "A Jetpack Compose view \"$componentName\" must be rendered inside a <Host> component. " +
+      "Wrap your component with `<Host>` from '@expo/ui/jetpack-compose'."
+  )
