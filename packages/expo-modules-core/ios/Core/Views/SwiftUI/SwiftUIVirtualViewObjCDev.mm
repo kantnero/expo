@@ -94,11 +94,14 @@ static std::unordered_map<std::string, expo::ExpoViewComponentDescriptor<>::Flav
     static const auto defaultProps = std::make_shared<const expo::SwiftUIViewProps>();
     _props = defaultProps;
     self.hidden = YES;
+#if TARGET_OS_IOS || TARGET_OS_TV
     self.userInteractionEnabled = NO;
+#endif
   }
   return self;
 }
 
+#if TARGET_OS_IOS || TARGET_OS_TV
 - (void)didMoveToSuperview
 {
   [super didMoveToSuperview];
@@ -109,6 +112,18 @@ static std::unordered_map<std::string, expo::ExpoViewComponentDescriptor<>::Flav
                 self.componentName ?: NSStringFromClass([self class]), (long)self.tag);
   }
 }
+#else
+- (void)viewDidMoveToSuperview
+{
+  [super viewDidMoveToSuperview];
+  if (self.superview != nil) {
+    RCTLogError(@"A SwiftUI view \"%@\" (tag: %ld) is being mounted inside a standard NSView. "
+                @"Double check that in JSX you have wrapped your component with "
+                @"`<Host>` from '@expo/ui/swift-ui'.",
+                self.componentName ?: NSStringFromClass([self class]), (long)self.tag);
+  }
+}
+#endif // TARGET_OS_IOS || TARGET_OS_TV
 
 #include "SwiftUIVirtualViewSharedImpl+Private.h"
 
