@@ -1,4 +1,5 @@
 import { Ref } from 'react';
+import { type TextFieldState } from '../State';
 import { type ViewEvent } from '../../types';
 import { type CommonViewModifierProps } from '../types';
 /**
@@ -36,6 +37,14 @@ export type TextFieldRef = {
 };
 export type TextFieldProps = {
     ref?: Ref<TextFieldRef>;
+    /**
+     * An observable state object that drives the text field.
+     * When provided, `state.text` and `state.isFocused` are the source of truth —
+     * no `defaultValue`, `onChangeText`, or ref methods needed.
+     *
+     * Create one with `useTextFieldState()`.
+     */
+    state?: TextFieldState;
     /**
      * Initial value that the `TextField` displays when being mounted. As the `TextField` is an uncontrolled component, change the key prop if you need to change the text value.
      */
@@ -92,7 +101,9 @@ export type TextFieldProps = {
      */
     autoFocus?: boolean;
 } & CommonViewModifierProps;
-export type NativeTextFieldProps = Omit<TextFieldProps, 'onChangeText' | 'onSubmit'> & {} & ViewEvent<'onValueChanged', {
+export type NativeTextFieldProps = Omit<TextFieldProps, 'onChangeText' | 'onSubmit' | 'state'> & {
+    stateId?: number;
+} & ViewEvent<'onValueChanged', {
     value: string;
 }> & ViewEvent<'onFocusChanged', {
     value: boolean;

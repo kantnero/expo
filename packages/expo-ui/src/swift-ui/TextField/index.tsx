@@ -1,6 +1,7 @@
 import { requireNativeView } from 'expo';
 import { Ref } from 'react';
 
+import { type TextFieldState, getStateId } from '../State';
 import { type ViewEvent } from '../../types';
 import { createViewModifierEventListener } from '../modifiers/utils';
 import { type CommonViewModifierProps } from '../types';
@@ -54,6 +55,14 @@ export type TextFieldRef = {
 
 export type TextFieldProps = {
   ref?: Ref<TextFieldRef>;
+  /**
+   * An observable state object that drives the text field.
+   * When provided, `state.text` and `state.isFocused` are the source of truth —
+   * no `defaultValue`, `onChangeText`, or ref methods needed.
+   *
+   * Create one with `useTextFieldState()`.
+   */
+  state?: TextFieldState;
   /**
    * Initial value that the `TextField` displays when being mounted. As the `TextField` is an uncontrolled component, change the key prop if you need to change the text value.
    */
@@ -112,8 +121,8 @@ export type TextFieldProps = {
 
 export type NativeTextFieldProps = Omit<
   TextFieldProps,
-  'onChangeText' | 'onSubmit'
-> & {} & ViewEvent<'onValueChanged', { value: string }> &
+  'onChangeText' | 'onSubmit' | 'state'
+> & { stateId?: number } & ViewEvent<'onValueChanged', { value: string }> &
   ViewEvent<'onFocusChanged', { value: boolean }> &
   ViewEvent<'onSelectionChanged', { start: number; end: number }> &
   ViewEvent<'onSubmit', { value: string }>;
@@ -124,9 +133,10 @@ const TextFieldNativeView: React.ComponentType<NativeTextFieldProps> = requireNa
 );
 
 function transformTextFieldProps(props: TextFieldProps): NativeTextFieldProps {
-  const { modifiers, ...restProps } = props;
+  const { modifiers, state, ...restProps } = props;
   return {
     modifiers,
+    stateId: getStateId(state),
     ...(modifiers ? createViewModifierEventListener(modifiers) : undefined),
     ...restProps,
     onValueChanged: (event) => {

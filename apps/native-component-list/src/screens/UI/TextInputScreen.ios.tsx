@@ -9,6 +9,7 @@ import {
   Text,
   HStack,
   Picker,
+  useTextFieldState,
 } from '@expo/ui/swift-ui';
 import {
   listSectionSpacing,
@@ -147,8 +148,57 @@ export default function TextInputScreen() {
         <Section title="Secure Text Input">
           <SecureField ref={secureRef} defaultValue="hey there" keyboardType="numeric" />
         </Section>
+        <Section title="Shared State">
+          <SharedStateTextField />
+        </Section>
       </Form>
     </Host>
+  );
+}
+
+/**
+ * Demonstrates using `useTextFieldState` — direct property access replaces the imperative ref API.
+ * `state.text` and `state.isFocused` are readable/writable from JS.
+ */
+function SharedStateTextField() {
+  const state = useTextFieldState('Hello from shared state');
+  const [log, setLog] = React.useState('');
+
+  React.useEffect(() => {
+    const sub = state.addListener('textChange', ({ text }) => {
+      setLog(`Text: ${text}`);
+    });
+    return () => sub.remove();
+  }, [state]);
+
+  return (
+    <>
+      <TextField state={state} placeholder="Shared state field" autocorrection={false} />
+      <Text>{log}</Text>
+      <HStack spacing={16}>
+        <Button
+          modifiers={[buttonStyle('bordered')]}
+          onPress={() => {
+            state.isFocused = true;
+          }}
+          label="Focus"
+        />
+        <Button
+          modifiers={[buttonStyle('bordered')]}
+          onPress={() => {
+            state.isFocused = false;
+          }}
+          label="Blur"
+        />
+        <Button
+          modifiers={[buttonStyle('bordered')]}
+          onPress={() => {
+            state.text = 'Set from JS!';
+          }}
+          label="Set text"
+        />
+      </HStack>
+    </>
   );
 }
 

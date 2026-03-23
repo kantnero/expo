@@ -46,6 +46,55 @@ export function useToggleState(initialValue: boolean = false): ToggleState {
   }, [initialValue]);
 }
 
+// MARK: - TextFieldState
+
+type TextFieldStateEvents = {
+  textChange: (payload: { text: string }) => void;
+  focusChange: (payload: { isFocused: boolean }) => void;
+};
+
+/**
+ * Observable state for a TextField, shared between JavaScript and SwiftUI.
+ *
+ * Replaces the imperative ref API (`ref.setText()`, `ref.focus()`) with direct property access:
+ * - `state.text = "hello"` updates the native text field
+ * - `state.isFocused = true` focuses the field
+ * - Reading `state.text` returns the current value
+ */
+export declare class TextFieldState extends SharedObject<TextFieldStateEvents> {
+  /** The current text value. */
+  text: string;
+  /** Whether the field is focused. */
+  isFocused: boolean;
+}
+
+/**
+ * Creates a `TextFieldState` that is automatically cleaned up when the component unmounts.
+ *
+ * @example
+ * ```tsx
+ * const state = useTextFieldState('');
+ *
+ * state.addListener('textChange', ({ text }) => {
+ *   console.log('Text:', text);
+ * });
+ *
+ * // Focus from JS:
+ * state.isFocused = true;
+ *
+ * return <TextField state={state} placeholder="Enter text" />;
+ * ```
+ */
+export function useTextFieldState(initialValue: string = ''): TextFieldState {
+  return useReleasingSharedObject(() => {
+    const state = new ExpoUI.TextFieldState() as TextFieldState;
+    if (initialValue) {
+      state.text = initialValue;
+    }
+    return state;
+  }, [initialValue]);
+}
+
 // MARK: - Utilities
 
 /**

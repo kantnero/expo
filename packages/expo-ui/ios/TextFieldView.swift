@@ -17,6 +17,7 @@ enum KeyboardType: String, Enumerable {
 }
 
 final class TextFieldProps: UIBaseViewProps {
+  @Field var stateId: Int?
   @Field var defaultValue: String = ""
   @Field var placeholder: String = ""
   @Field var multiline: Bool = false
@@ -185,6 +186,14 @@ struct TextFieldView: ExpoSwiftUI.View, ExpoSwiftUI.FocusableView {
   }
 
   var body: some View {
+    if let state: TextFieldState = props.resolveSharedObject(props.stateId) {
+      StatefulTextFieldContent(state: state, props: props)
+    } else {
+      legacyBody
+    }
+  }
+
+  private var legacyBody: some View {
     let baseView = text
       .onAppear {
         textManager.text = props.defaultValue
@@ -223,5 +232,55 @@ struct TextFieldView: ExpoSwiftUI.View, ExpoSwiftUI.FocusableView {
 #else
     return baseView
 #endif
+  }
+}
+
+// MARK: - State-observed text field
+
+private struct StatefulTextFieldContent: View {
+  @ObservedObject var state: TextFieldState
+  @ObservedObject var props: TextFieldProps
+  @FocusState private var isFocused: Bool
+
+  var body: some View {
+    textField
+      .lineLimit((props.multiline && allowMultiLine()) ? props.numberOfLines : 1)
+      .fixedSize(horizontal: false, vertical: true)
+      .keyboardType(getKeyboardType(props.keyboardType))
+      .autocorrectionDisabled(!props.autocorrection)
+      .focused($isFocused)
+      .onAppear {
+        if props.autoFocus {
+          isFocused = true
+        }
+      }
+      .onChange(of: state.isFocused) { newValue in
+        isFocused = newValue
+      }
+      .onChange(of: isFocused) { newValue in
+        state.isFocused = newValue
+      }
+      .onSubmit {
+        if props.allowNewlines && props.multiline && allowMultiLine() {
+          state.text.append("\n")
+          isFocused = true
+        }
+      }
+  }
+
+  @ViewBuilder
+  private var textField: some View {
+    if #available(iOS 16.0, tvOS 16.0, *) {
+      TextField(
+        props.placeholder,
+        text: $state.text,
+        axis: (props.multiline && allowMultiLine()) ? .vertical : .horizontal
+      )
+    } else {
+      TextField(
+        props.placeholder,
+        text: $state.text
+      )
+    }
   }
 }

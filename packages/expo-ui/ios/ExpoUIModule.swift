@@ -29,6 +29,26 @@ public final class ExpoUIModule: Module {
       }
     }
 
+    Class(TextFieldState.self) {
+      Constructor { () -> TextFieldState in
+        return TextFieldState()
+      }
+
+      Property("text") { (state: TextFieldState) -> String in
+        return state.text
+      }
+      .set { (state: TextFieldState, value: String) in
+        state.text = value
+      }
+
+      Property("isFocused") { (state: TextFieldState) -> Bool in
+        return state.isFocused
+      }
+      .set { (state: TextFieldState, value: Bool) in
+        state.isFocused = value
+      }
+    }
+
     // MARK: - Module Functions
 
     AsyncFunction("completeRefresh") { (id: String) in
