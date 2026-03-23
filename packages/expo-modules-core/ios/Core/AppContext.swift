@@ -563,17 +563,16 @@ public final class AppContext: NSObject, @unchecked Sendable {
    Installs SharedObject class definitions (with property getter/setters) in the given runtime.
    This enables worklets to access properties like `state.isOn` on SharedObject instances.
 
-   Builds prototype objects for each SharedObject class with the same property getter/setters
-   as the main runtime. Also installs `global.expo.__wrapSharedObject(className, objectId)`
-   to create properly initialized SharedObject proxies in the worklet runtime.
+   Also installs `SharedObject.__wrap(className, objectId)` as a static method on the
+   SharedObject class for creating properly initialized proxies in this runtime.
    */
   @MainActor
   private func installModuleClasses(in runtime: JavaScriptRuntime) throws {
-    // Get the SharedObject base prototype from this runtime (installed earlier)
     let coreObject = runtime.global().getProperty(EXGlobalCoreObjectPropertyName).getObject()
-    let sharedObjectBaseProto = coreObject.getProperty("SharedObject").getObject().getProperty("prototype").getObject()
+    let sharedObjectClass = coreObject.getProperty("SharedObject").getObject()
+    let sharedObjectBaseProto = sharedObjectClass.getProperty("prototype").getObject()
 
-    // Build a prototype for each SharedObject class with property getter/setters
+    // Build a prototype for each SharedObject class using ClassDefinition
     var protoMap: [String: JavaScriptObject] = [:]
 
     for module in moduleRegistry {
@@ -581,28 +580,19 @@ public final class AppContext: NSObject, @unchecked Sendable {
         guard classDefinition.associatedType is DynamicSharedObjectType else {
           continue
         }
-
-        // Create a prototype that inherits from the SharedObject base prototype
-        guard let classProto = try runtime.createObject(withPrototype: sharedObjectBaseProto) else {
+        guard let proto = try classDefinition.buildPrototype(
+          in: runtime, appContext: self, basePrototype: sharedObjectBaseProto
+        ) else {
           continue
         }
-
-        // Install property getter/setters on the prototype.
-        // The native closures route to the same native SharedObject via the shared registry.
-        for property in classDefinition.properties.values {
-          let descriptor = try property.buildDescriptor(appContext: self, in: runtime)
-          classProto.defineProperty(property.name, descriptor: descriptor)
-        }
-
-        protoMap[classDefinition.name] = classProto
+        protoMap[classDefinition.name] = proto
       }
     }
 
-    // Install global.expo.__wrapSharedObject(className, objectId).
-    // Creates a JS object with the right class prototype and NativeState set,
-    // so property getters/setters route to the native SharedObject.
-    coreObject.setProperty("__wrapSharedObject", value: runtime.createSyncFunction(
-      "__wrapSharedObject",
+    // Install SharedObject.__wrap(className, objectId) — creates a proxy instance
+    // with the right prototype + NativeState for property access.
+    sharedObjectClass.setProperty("__wrap", value: runtime.createSyncFunction(
+      "__wrap",
       argsCount: 2
     ) { [protoMap] _, arguments in
       let className = try arguments[0].asString()
@@ -615,10 +605,7 @@ public final class AppContext: NSObject, @unchecked Sendable {
         throw SharedObjectClassNotFoundException(className)
       }
 
-      // Attach the shared object ID so property getters can resolve the native object.
-      // No-op releaser — this proxy doesn't own the native object's lifecycle.
       SharedObjectUtils.setNativeState(instance, runtime: runtime, objectId: objectId) { _ in }
-
       return runtime.value(from: instance)
     })
   }

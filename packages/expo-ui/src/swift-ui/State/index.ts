@@ -128,7 +128,7 @@ export function registerSharedObjectSerializer(): void {
     },
     unpack: (packed: any) => {
       'worklet';
-      return (globalThis as any).expo.__wrapSharedObject(packed.className, packed.objectId);
+      return (globalThis as any).expo.SharedObject.__wrap(packed.className, packed.objectId);
     },
   });
 }
