@@ -544,8 +544,83 @@ public final class AppContext: NSObject, @unchecked Sendable {
     // Install `global.expo.EventEmitter`.
     EXJavaScriptRuntimeManager.installEventEmitterClass(uiRuntime)
 
+    // Install `global.expo.SharedObject`.
+    EXJavaScriptRuntimeManager.installSharedObjectClass(uiRuntime) { [weak sharedObjectRegistry] objectId in
+      sharedObjectRegistry?.delete(objectId)
+    }
+
+    // Install `global.expo.SharedRef`.
+    EXJavaScriptRuntimeManager.installSharedRefClass(uiRuntime)
+
     // Install `global.expo.NativeModule`.
     EXJavaScriptRuntimeManager.installNativeModuleClass(uiRuntime)
+
+    // Install module classes so their properties are accessible in the worklet runtime.
+    try installModuleClasses(in: uiRuntime)
+  }
+
+  /**
+   Installs SharedObject class definitions (with property getter/setters) in the given runtime.
+   This enables worklets to access properties like `state.isOn` on SharedObject instances.
+
+   Builds prototype objects for each SharedObject class with the same property getter/setters
+   as the main runtime. Also installs `global.expo.__wrapSharedObject(className, objectId)`
+   to create properly initialized SharedObject proxies in the worklet runtime.
+   */
+  @MainActor
+  private func installModuleClasses(in runtime: JavaScriptRuntime) throws {
+    // Get the SharedObject base prototype from this runtime (installed earlier)
+    let coreObject = runtime.global().getProperty(EXGlobalCoreObjectPropertyName).getObject()
+    let sharedObjectBaseProto = coreObject.getProperty("SharedObject").getObject().getProperty("prototype").getObject()
+
+    // Build a prototype for each SharedObject class with property getter/setters
+    var protoMap: [String: JavaScriptObject] = [:]
+
+    for module in moduleRegistry {
+      for (_, classDefinition) in module.definition.classes {
+        guard classDefinition.associatedType is DynamicSharedObjectType else {
+          continue
+        }
+
+        // Create a prototype that inherits from the SharedObject base prototype
+        guard let classProto = try runtime.createObject(withPrototype: sharedObjectBaseProto) else {
+          continue
+        }
+
+        // Install property getter/setters on the prototype.
+        // The native closures route to the same native SharedObject via the shared registry.
+        for property in classDefinition.properties.values {
+          let descriptor = try property.buildDescriptor(appContext: self, in: runtime)
+          classProto.defineProperty(property.name, descriptor: descriptor)
+        }
+
+        protoMap[classDefinition.name] = classProto
+      }
+    }
+
+    // Install global.expo.__wrapSharedObject(className, objectId).
+    // Creates a JS object with the right class prototype and NativeState set,
+    // so property getters/setters route to the native SharedObject.
+    coreObject.setProperty("__wrapSharedObject", value: runtime.createSyncFunction(
+      "__wrapSharedObject",
+      argsCount: 2
+    ) { [protoMap] _, arguments in
+      let className = try arguments[0].asString()
+      let objectId = try arguments[1].asInt()
+
+      guard let classProto = protoMap[className] else {
+        throw SharedObjectClassNotFoundException(className)
+      }
+      guard let instance = try runtime.createObject(withPrototype: classProto) else {
+        throw SharedObjectClassNotFoundException(className)
+      }
+
+      // Attach the shared object ID so property getters can resolve the native object.
+      // No-op releaser — this proxy doesn't own the native object's lifecycle.
+      SharedObjectUtils.setNativeState(instance, runtime: runtime, objectId: objectId) { _ in }
+
+      return runtime.value(from: instance)
+    })
   }
 
   /**
@@ -630,6 +705,12 @@ public final class AppContext: NSObject, @unchecked Sendable {
 public class JavaScriptClassNotFoundException: Exception, @unchecked Sendable {
   public override var reason: String {
     "Unable to find a JavaScript class in the class registry"
+  }
+}
+
+internal final class SharedObjectClassNotFoundException: GenericException<String>, @unchecked Sendable {
+  override var reason: String {
+    "SharedObject class '\(param)' is not registered in the worklet runtime"
   }
 }
 

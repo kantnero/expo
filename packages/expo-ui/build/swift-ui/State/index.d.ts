@@ -43,5 +43,33 @@ export declare function getStateId(state?: object): number | undefined;
  * Generic hook for creating any ObservableState subclass registered in the module.
  */
 export declare function useSharedState<T extends InstanceType<typeof SharedObject>>(factory: () => T, deps?: DependencyList): T;
+/**
+ * Registers a custom serializer so SharedObjects automatically work in worklets.
+ * Call once after `installOnUIRuntime()`. After registration, SharedObjects captured
+ * by worklet closures are automatically packed/unpacked — no manual wrapping needed.
+ *
+ * @example
+ * ```tsx
+ * import { installOnUIRuntime } from 'expo-modules-core';
+ * installOnUIRuntime();
+ * registerSharedObjectSerializer();
+ *
+ * // Now SharedObjects just work in worklets:
+ * const state = useToggleState(false);
+ * runOnUI(() => {
+ *   'worklet';
+ *   state.isOn = true;
+ * })();
+ * ```
+ */
+export declare function registerSharedObjectSerializer(): void;
+/**
+ * Creates a worklet-accessible handle for a SharedObject (manual approach).
+ * Use `registerSharedObjectSerializer()` instead for automatic serialization.
+ */
+export declare function getWorkletHandle(state: object, className: string): {
+    className: string;
+    objectId: number;
+};
 export {};
 //# sourceMappingURL=index.d.ts.map

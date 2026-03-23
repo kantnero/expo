@@ -69,3 +69,78 @@ export function useSharedState<T extends InstanceType<typeof SharedObject>>(
 ): T {
   return useReleasingSharedObject(factory, deps);
 }
+
+// MARK: - Worklet support
+
+let _serializerRegistered = false;
+
+/**
+ * Registers a custom serializer so SharedObjects automatically work in worklets.
+ * Call once after `installOnUIRuntime()`. After registration, SharedObjects captured
+ * by worklet closures are automatically packed/unpacked — no manual wrapping needed.
+ *
+ * @example
+ * ```tsx
+ * import { installOnUIRuntime } from 'expo-modules-core';
+ * installOnUIRuntime();
+ * registerSharedObjectSerializer();
+ *
+ * // Now SharedObjects just work in worklets:
+ * const state = useToggleState(false);
+ * runOnUI(() => {
+ *   'worklet';
+ *   state.isOn = true;
+ * })();
+ * ```
+ */
+export function registerSharedObjectSerializer(): void {
+  if (_serializerRegistered) {
+    return;
+  }
+  _serializerRegistered = true;
+
+  const { registerCustomSerializable } = require('react-native-worklets') as {
+    registerCustomSerializable: (data: {
+      name: string;
+      determine: (value: object) => boolean;
+      pack: (value: any) => any;
+      unpack: (value: any) => any;
+    }) => void;
+  };
+
+  registerCustomSerializable({
+    name: 'ExpoSharedObject',
+    determine: (value: object) => {
+      'worklet';
+      return (
+        value != null &&
+        typeof value === 'object' &&
+        '__expo_shared_object_id__' in value &&
+        (value as any).__expo_shared_object_id__ !== 0
+      );
+    },
+    pack: (value: any) => {
+      'worklet';
+      return {
+        className: value.constructor?.name ?? 'SharedObject',
+        objectId: value.__expo_shared_object_id__,
+      };
+    },
+    unpack: (packed: any) => {
+      'worklet';
+      return (globalThis as any).expo.__wrapSharedObject(packed.className, packed.objectId);
+    },
+  });
+}
+
+/**
+ * Creates a worklet-accessible handle for a SharedObject (manual approach).
+ * Use `registerSharedObjectSerializer()` instead for automatic serialization.
+ */
+export function getWorkletHandle(state: object, className: string): { className: string; objectId: number } {
+  const objectId = (state as { __expo_shared_object_id__?: number }).__expo_shared_object_id__;
+  if (objectId == null) {
+    throw new Error('Expected a SharedObject with __expo_shared_object_id__');
+  }
+  return { className, objectId };
+}

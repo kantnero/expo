@@ -1,6 +1,20 @@
-import { Button, Host, List, Section, Text, Toggle, useToggleState } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Host,
+  List,
+  Section,
+  Text,
+  Toggle,
+  useToggleState,
+  registerSharedObjectSerializer,
+} from '@expo/ui/swift-ui';
 import { labelsHidden, tint, toggleStyle } from '@expo/ui/swift-ui/modifiers';
+import { installOnUIRuntime } from 'expo-modules-core';
 import { useEffect, useState } from 'react';
+import { runOnUI } from 'react-native-worklets';
+
+installOnUIRuntime();
+registerSharedObjectSerializer();
 
 export default function ToggleScreen() {
   const [airplaneMode, setAirplaneMode] = useState(false);
@@ -70,11 +84,20 @@ function SharedStateToggle() {
     return () => subscription.remove();
   }, [state]);
 
+  const toggleFromWorklet = () => {
+    runOnUI(() => {
+      'worklet';
+      // state is automatically serialized/deserialized via registerSharedObjectSerializer
+      state.isOn = !state.isOn;
+    })();
+  };
+
   return (
     <>
       <Toggle state={state} label="Shared State Toggle" />
       <Text>{log}</Text>
       <Button label="Toggle from JS" onPress={() => (state.isOn = !state.isOn)} />
+      <Button label="Toggle from Worklet" onPress={toggleFromWorklet} />
     </>
   );
 }
