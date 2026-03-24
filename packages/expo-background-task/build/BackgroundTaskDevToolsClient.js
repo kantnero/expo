@@ -59,4 +59,4 @@ export async function maybeInitDevToolsAsync() {
         console.error('Failed to start app listeners for expo-backgroundtask-devtools-plugin:', error);
     }
 }
-//# sourceMappingURL=BackgroundTaskDevClient.js.map
+//# sourceMappingURL=BackgroundTaskDevToolsClient.js.map
