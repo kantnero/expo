@@ -1897,5 +1897,9 @@ extension ViewModifierRegistry {
     register("widgetURL") { params, appContext, _ in
       return try WidgetURLModifier(from: params, appContext: appContext)
     }
+
+    register("containerBackground") { params, appContext, _ in
+      return try ContainerBackgroundModifier(from: params, appContext: appContext)
+    }
   }
 }
