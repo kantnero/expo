@@ -1,4 +1,4 @@
-// Side effect file to load shared object support in worklets
+// Side effect file to load SharedObject support in worklets
 
 import { installOnUIRuntime } from 'expo-modules-core';
 import { registerSharedObjectSerializer } from './index';

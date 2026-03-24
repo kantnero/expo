@@ -1,4 +1,4 @@
-// Load shared object support in worklets
+// Load SharedObject support in worklets
 import './State/index.fx';
 
 export * from './AccessoryWidgetBackground';
