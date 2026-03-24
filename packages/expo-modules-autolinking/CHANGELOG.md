@@ -18,6 +18,7 @@
 ### 💡 Others
 
 - Add `package.json:exports` with no-op reexport paths ([#44002](https://github.com/expo/expo/pull/44002) by [@kitten](https://github.com/kitten), [@hassankhan](https://github.com/hassankhan))
+- [iOS] Add more detailed warnings when a package is not linked due to a mismatch between project and package deployment target. ([#44200](https://github.com/expo/expo/pull/44200) by [@behenate](https://github.com/behenate))
 
 ## 55.0.8 — 2026-02-25
 
