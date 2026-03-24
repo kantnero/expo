@@ -547,16 +547,17 @@ public final class AppContext: NSObject, @unchecked Sendable {
     // Install `global.expo.NativeModule`.
     EXJavaScriptRuntimeManager.installNativeModuleClass(uiRuntime)
 
-    // Install module class prototypes so SharedObject properties are accessible in worklets.
-    try installModuleClasses(in: uiRuntime)
+    // Install SharedObject.__resolveInWorklet so shared objects can be resolved in the worklet runtime.
+    try installSharedObjectResolver(in: uiRuntime)
   }
 
   /**
-   Installs SharedObject class prototypes with property getter/setters in the given runtime.
-   Also installs `SharedObject.__resolveInWorklet(className, objectId)` for resolving the original native object instance in worklets.
+   Installs `SharedObject.__resolveInWorklet(objectId)` in the given runtime.
+   When called, it looks up the native SharedObject by ID, lazily builds its prototype 
+   for the worklet runtime, and returns a JS object with the class prototype.
    */
   @MainActor
-  private func installModuleClasses(in runtime: JavaScriptRuntime) throws {
+  private func installSharedObjectResolver(in runtime: JavaScriptRuntime) throws {
     let coreObject = runtime.global().getProperty(EXGlobalCoreObjectPropertyName).getObject()
     let sharedObjectClass = coreObject.getProperty("SharedObject").getObject()
     let sharedObjectBaseProto = sharedObjectClass.getProperty("prototype").getObject()
@@ -564,7 +565,7 @@ public final class AppContext: NSObject, @unchecked Sendable {
     var protoCache: [ObjectIdentifier: JavaScriptObject] = [:]
 
     // Called by the worklet serializer's `unpack` to recreate a SharedObject proxy.
-    // Takes just the objectId — looks up the native type, lazily builds the prototype on first use.
+    // Takes just the objectId, looks up the native type, lazily builds the prototype on first use.
     sharedObjectClass.setProperty("__resolveInWorklet", value: runtime.createSyncFunction(
       "__resolveInWorklet",
       argsCount: 1
