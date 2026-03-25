@@ -15,6 +15,6 @@ internal final class WorkletCallback: ObservableState {
     guard let worklet, let runtime = appContext?._uiRuntime as? WorkletRuntime else {
       return
     }
-    worklet.schedule(on: runtime, arguments: arguments)
+    worklet.execute(on: runtime, arguments: arguments)
   }
 }
