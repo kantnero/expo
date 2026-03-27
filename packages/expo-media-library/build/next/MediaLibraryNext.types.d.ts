@@ -3,4 +3,5 @@ export * from './types/AssetField';
 export * from './types/MediaType';
 export * from './types/GranularPermission';
 export * from './types/AssetInfo';
+export * from './types/MediaLibraryAssetsChangeEvent';
 //# sourceMappingURL=MediaLibraryNext.types.d.ts.map

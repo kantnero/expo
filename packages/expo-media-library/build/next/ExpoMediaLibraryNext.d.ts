@@ -1,9 +1,12 @@
 import { NativeModule, PermissionResponse } from 'expo-modules-core';
-import { GranularPermission } from './MediaLibraryNext.types';
+import { GranularPermission, MediaLibraryAssetsChangeEvent } from './MediaLibraryNext.types';
 import { Album } from './types/Album';
 import { Asset } from './types/Asset';
 import { Query } from './types/Query';
-declare class ExpoMediaLibraryNextModule extends NativeModule {
+declare class ExpoMediaLibraryNextModule extends NativeModule<{
+    mediaLibraryDidChange: (event: MediaLibraryAssetsChangeEvent) => void;
+    onObserverReady: (event: any) => void;
+}> {
     Asset: typeof Asset;
     Album: typeof Album;
     Query: typeof Query;
