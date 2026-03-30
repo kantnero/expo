@@ -7,7 +7,6 @@ export type MediaLibraryAssetsChangeEvent = {
      * `true` indicates the changes are described by the `insertedAssets`, `deletedAssets` and
      * `updatedAssets` values. `false` indicates that the scope of changes is too large and you
      * should perform a full assets reload.
-     *
      * On Android this is always `false` because the platform does not provide incremental change details.
      */
     hasIncrementalChanges: boolean;
