@@ -45,7 +45,7 @@ export default function BasicExposedDropdownMenuBoxExample() {
     <Host matchContents>
       <ExposedDropdownMenuBox expanded={expanded} onExpandedChange={setExpanded}>
         <ExposedDropdownMenuBox.Anchor>
-          <TextInput defaultValue={selectedLabel} onChangeText={() => {}} key={selected} readOnly />
+          <TextInput defaultValue={selectedLabel} key={selected} readOnly />
         </ExposedDropdownMenuBox.Anchor>
         <ExposedDropdownMenuBox.Items>
           {LANGUAGES.map(lang => (
