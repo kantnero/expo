@@ -83,11 +83,11 @@ export const UIScreens = [
     },
   },
   {
-    name: 'ExposedDropdownMenuPicker component',
-    route: 'ui/exposed-dropdown-menu-picker',
+    name: 'ExposedDropdownMenuBox component',
+    route: 'ui/exposed-dropdown-menu-box',
     options: {},
     getComponent() {
-      return optionalRequire(() => require('./ExposedDropdownMenuPickerScreen'));
+      return optionalRequire(() => require('./ExposedDropdownMenuBoxScreen'));
     },
   },
   {
