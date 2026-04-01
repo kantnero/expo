@@ -1,5 +1,6 @@
 import { NativeModule, PermissionResponse } from 'expo-modules-core';
 import { GranularPermission } from './MediaLibraryNext.types';
+import { MediaTypeFilter } from './types/MediaTypeFilter';
 import { Album } from './types/Album';
 import { Asset } from './types/Asset';
 import { Query } from './types/Query';
@@ -14,6 +15,7 @@ declare class ExpoMediaLibraryNextModule extends NativeModule {
     getAlbum(title: string): Promise<Album | null>;
     getPermissionsAsync(writeOnly?: boolean, granularPermissions?: GranularPermission[]): Promise<PermissionResponse>;
     requestPermissionsAsync(writeOnly?: boolean, granularPermissions?: GranularPermission[]): Promise<PermissionResponse>;
+    presentPermissionsPickerAsync(mediaTypes?: MediaTypeFilter[]): Promise<void>;
 }
 declare const _default: ExpoMediaLibraryNextModule;
 export default _default;
