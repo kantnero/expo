@@ -1,6 +1,7 @@
 package expo.modules.filesystem
 
 import android.webkit.URLUtil
+import com.facebook.react.modules.network.OkHttpClientProvider
 import expo.modules.kotlin.services.FilePermissionService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -9,7 +10,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.File
@@ -39,9 +39,6 @@ class DownloadTaskStore {
     activeCalls.remove(uuid)
   }
 }
-
-/** Shared OkHttpClient instance reused across all downloads. */
-private val sharedHttpClient = OkHttpClient()
 
 /**
  * Executes a file download with optional progress reporting.
@@ -122,7 +119,7 @@ private suspend fun executeRequest(
   downloadUUID: String?,
   downloadStore: DownloadTaskStore
 ): Response = suspendCancellableCoroutine { continuation ->
-  val call = sharedHttpClient.newCall(request)
+  val call = OkHttpClientProvider.getOkHttpClient().newCall(request)
 
   if (downloadUUID != null) {
     downloadStore.store(call, downloadUUID)
