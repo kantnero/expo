@@ -55,6 +55,7 @@ PODS:
     - boost
     - DoubleConversion
     - ExpoModulesCore
+    - ExpoModulesTestCore
     - fast_float
     - fmt
     - glog
@@ -4564,7 +4565,7 @@ SPEC CHECKSUMS:
   EXConstants: ed3e09607493bb717a7932f0e6786846169692a2
   EXJSONUtils: 475f1af3d20fbd99268694df81d096817092aa89
   EXManifests: ad24b3a497444eee9e07cc8590b09974ba369050
-  Expo: 19ae43e70ca3814d8efb9f36e2789b29cfa022be
+  Expo: afa1e57c45ee9b2b4d2b048df78f1de8849eb507
   ExpoAsset: 595cc0587b67afaaedddca79d4c1cf506400cb27
   ExpoAudio: 40c883c60ed3bb17ecb3744a00732fb47029535b
   ExpoBackgroundFetch: ee315c8d1a54a3f358fc0cedb68e808e95935c57
@@ -4642,7 +4643,7 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 8a82b93a6400c8e6551c0bcd66a9177f2e067aed
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  hermes-engine: 4de4833a80a7b39c6c5d6c725a600e2faa49bc14
+  hermes-engine: 020d7dbf64ea2ac7f2dc43408d80cc6035c4b3e8
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
