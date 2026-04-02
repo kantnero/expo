@@ -233,6 +233,10 @@ class MediaLibraryNextModule : Module() {
       albumQuery.getAlbum(title)
     }
 
+    AsyncFunction("getAllAlbums") Coroutine { ->
+      albumQuery.getAllAlbums()
+    }
+
     AsyncFunction("deleteAlbums") Coroutine { albums: List<Album> ->
       val contentUris = albums
         .map { it.getAssets() }

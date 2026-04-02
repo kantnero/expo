@@ -49,6 +49,10 @@ export class Album extends ExpoMediaLibraryNext.Album {
     static get(title) {
         return ExpoMediaLibraryNext.getAlbum(title);
     }
+    // @hidden
+    static getAll() {
+        return ExpoMediaLibraryNext.getAllAlbums();
+    }
 }
 /**
  * Asks the user to grant permissions for accessing media in user's media library.

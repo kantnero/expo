@@ -14,6 +14,7 @@ export declare class Album extends ExpoMediaLibraryNext.Album {
     static create(name: string, assetsRefs: string[] | Asset[], moveAssets?: boolean): Promise<Album>;
     static delete(albums: Album[], deleteAssets?: boolean): Promise<void>;
     static get(title: string): Promise<Album | null>;
+    static getAll(): Promise<Album[]>;
 }
 /**
  * Asks the user to grant permissions for accessing media in user's media library.
